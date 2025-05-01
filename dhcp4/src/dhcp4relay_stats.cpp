@@ -1,8 +1,8 @@
-#include "dbconnector.h"
-#include "table.h"
-
-#include "dhcp4relay.h"
 #include "dhcp4relay_stats.h"
+
+#include "dbconnector.h"
+#include "dhcp4relay.h"
+#include "table.h"
 
 /* DHCPv4 counter name map */
 std::map<int, std::string> counterMap = {
@@ -16,8 +16,7 @@ std::map<int, std::string> counterMap = {
     {DHCPv4_MESSAGE_TYPE_RELEASE, "Release"},
     {DHCPv4_MESSAGE_TYPE_INFORM, "Inform"},
     {DHCPv4_MESSAGE_TYPE_MALFORMED, "Malformed"},
-    {DHCPv4_MESSAGE_TYPE_DROP, "Dropped"}
-};
+    {DHCPv4_MESSAGE_TYPE_DROP, "Dropped"}};
 
 /**
  * @code                calculate_delta(uint64_t new_value, uint64_t old_value);
@@ -60,10 +59,9 @@ std::unordered_map<std::string, DHCPCounters> DHCPCounterTable::getCountersData(
  * @return              none
  */
 void DHCPCounterTable::dbUpdateLoop() {
-    std::shared_ptr<swss::DBConnector> state_db = std::make_shared<swss::DBConnector> ("STATE_DB", 0);
-    std::shared_ptr<swss::Table> cntrTable = std::make_shared<swss::Table> (
-        state_db.get(), "DHCPV4_COUNTER_TABLE"
-    );
+    std::shared_ptr<swss::DBConnector> state_db = std::make_shared<swss::DBConnector>("STATE_DB", 0);
+    std::shared_ptr<swss::Table> cntrTable = std::make_shared<swss::Table>(
+        state_db.get(), "DHCPV4_COUNTER_TABLE");
 
     while (!stopThread) {
         std::this_thread::sleep_for(std::chrono::seconds(DHCP_RELAY_DB_UPDATE_TIMER_VAL));
