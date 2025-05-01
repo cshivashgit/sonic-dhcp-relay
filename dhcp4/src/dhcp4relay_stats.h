@@ -23,14 +23,14 @@ private:
     std::mutex interfacesMutex;
     std::atomic<bool> stopThread{false};
     std::thread dbUpdateThread;
-    
+
     void dbUpdateLoop();
 
 public:
     void startDbUpdates();
     void stopDbUpdates();
     void initializeInterface(const std::string& interface);
-    void incrementCounter(const std::string& interface, const std::string& direction, 
+    void incrementCounter(const std::string& interface, const std::string& direction,
                           int msg_type);
     void removeInterface(const std::string& interface);
     std::unordered_map<std::string, DHCPCounters> getCountersData();

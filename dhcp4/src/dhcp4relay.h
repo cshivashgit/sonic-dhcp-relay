@@ -1,23 +1,25 @@
 #pragma once
 
 #include <arpa/inet.h>
-#include <net/if.h>
+#include <event2/util.h>
+#include <ifaddrs.h>
+#include <linux/filter.h>
 #include <linux/if_packet.h>
+#include <net/if.h>
 #include <netinet/if_ether.h>
 #include <netinet/ip.h>
 #include <netinet/udp.h>
-#include <ifaddrs.h>
-#include <linux/filter.h>
+#include <syslog.h>
+
+#include <map>
 #include <string>
 #include <vector>
-#include <map>
-#include <event2/util.h>
-#include <syslog.h>
-#include "dbconnector.h"
-#include "table.h"
-#include "dhcp4_sender.h"
 
-#define PACKED __attribute__ ((packed))
+#include "dbconnector.h"
+#include "dhcp4_sender.h"
+#include "table.h"
+
+#define PACKED __attribute__((packed))
 
 #define RELAY_PORT 67
 #define CLIENT_PORT 68
@@ -25,8 +27,8 @@
 #define DHCPv4_OPTION_LIMIT 255
 #define RAWSOCKET_RECV_SIZE 1048576
 #define CLIENT_IF_PREFIX "Ethernet"
-#define BUFFER_SIZE 9200 //TODO: change to dynamic size based on MTU
-#define MAX_DHCP_PKT_SIZE 1472 // 1500 - (IP + UDP)headers
+#define BUFFER_SIZE 9200        // TODO: change to dynamic size based on MTU
+#define MAX_DHCP_PKT_SIZE 1472  // 1500 - (IP + UDP)headers
 #define MAC_ADDR_LEN 6
 
 #define BOOTPREQUEST 1
@@ -39,7 +41,7 @@
 #define DHCP_SUB_OPT_TLV_LENGTH_OFFSET 1
 #define DHCP_SUB_OPT_TLV_HEADER_LEN 2
 
-#define lengthof(A) (sizeof (A) / sizeof (A)[0])
+#define lengthof(A) (sizeof(A) / sizeof(A)[0])
 
 extern char vrf_single[IF_NAMESIZE];
 extern bool vrf_sock_set;
@@ -53,16 +55,15 @@ extern int config_pipe[2];
 #define OPTION82_SUBOPT_VIRTUAL_SUBNET 151
 
 #define DHCP_ETHERNET_HDR_LEN 14
-#define DHCP_IP_HDR_LEN       20
-#define DHCP_UDP_HDR_LEN       8
-#define DHCP_UDP_OVERHEAD_LEN  (DHCP_ETHERNET_HDR_LEN + DHCP_IP_HDR_LEN + DHCP_UDP_HDR_LEN)
-#define DHCP_SNAME_LEN         64
-#define DHCP_FILE_LEN          128
+#define DHCP_IP_HDR_LEN 20
+#define DHCP_UDP_HDR_LEN 8
+#define DHCP_UDP_OVERHEAD_LEN (DHCP_ETHERNET_HDR_LEN + DHCP_IP_HDR_LEN + DHCP_UDP_HDR_LEN)
+#define DHCP_SNAME_LEN 64
+#define DHCP_FILE_LEN 128
 #define DHCP_FIXED_NON_UDP_LEN 236
-#define DHCP_FIXED_LEN         (DHCP_FIXED_NON_UDP_LEN + DHCP_UDP_OVERHEAD_LEN)
-#define DHCP_MTU_MAX           9216
-#define DHCP_OPTION_LEN        (DHCP_MTU_MAX - DHCP_FIXED_LEN)
-
+#define DHCP_FIXED_LEN (DHCP_FIXED_NON_UDP_LEN + DHCP_UDP_OVERHEAD_LEN)
+#define DHCP_MTU_MAX 9216
+#define DHCP_OPTION_LEN (DHCP_MTU_MAX - DHCP_FIXED_LEN)
 
 #define BATCH_SIZE 64
 
@@ -74,8 +75,7 @@ struct VrfSocketInfo {
 };
 
 /* DHCPv4 message types */
-typedef enum
-{
+typedef enum {
     DHCPv4_MESSAGE_TYPE_UNKNOWN,
     DHCPv4_MESSAGE_TYPE_DISCOVER,
     DHCPv4_MESSAGE_TYPE_OFFER,
@@ -102,11 +102,11 @@ struct relay_config {
     sockaddr_in link_address_netmask;
     sockaddr_in src_intf_sel_addr;
     uint32_t link_ifindex;
-    uint8_t  host_mac_addr[MAC_ADDR_LEN];
+    uint8_t host_mac_addr[MAC_ADDR_LEN];
     std::shared_ptr<swss::DBConnector> state_db;
     std::string vlan;
     std::string phy_interface;
-    std::string vrf; // This is server VRF.
+    std::string vrf;  // This is server VRF.
     std::string source_interface;
     std::string link_selection_opt;
     std::string server_id_override_opt;
@@ -120,13 +120,12 @@ struct relay_config {
     std::shared_ptr<swss::DBConnector> config_db;
 };
 
-typedef enum
-{
+typedef enum {
     DHCPv4_RELAY_CONFIG_UNKNOWN,
     DHCPv4_RELAY_CONFIG_UPDATE,
     DHCPv4_RELAY_INTERFACE_UPDATE,
     DHCPv4_RELAY_METADATA_UPDATE
-}event_type;
+} event_type;
 
 struct event_config {
     event_type type;
@@ -161,7 +160,6 @@ int prepare_vlan_sockets(relay_config &config);
  * @return              int
  */
 int prepare_vrf_sockets(relay_config &config);
-
 
 /**
  * @code                        prepare_relay_interface_config(relay_config &interface_config);
@@ -274,7 +272,7 @@ void update_vlan_mapping(std::string vlan, bool is_add);
  * @return              none
  */
 void pkt_in_callback(evutil_socket_t fd, short event, void *arg);
-bool string_to_mac_addr(const std::string& mac_str, std::array<uint8_t, 6>& mac_addr);
+bool string_to_mac_addr(const std::string &mac_str, std::array<uint8_t, 6> &mac_addr);
 void config_event_callback(evutil_socket_t fd, short event, void *arg);
-uint8_t* decode_tlv(const uint8_t *buf, uint8_t t, uint8_t &l, uint32_t options_total_size);
-uint8_t encode_tlv(uint8_t* buf, uint8_t t, uint8_t l, uint8_t *v);
+uint8_t *decode_tlv(const uint8_t *buf, uint8_t t, uint8_t &l, uint32_t options_total_size);
+uint8_t encode_tlv(uint8_t *buf, uint8_t t, uint8_t l, uint8_t *v);

@@ -1,25 +1,24 @@
 #pragma once
 
+#include <atomic>
+#include <boost/thread.hpp>
+#include <limits>
+#include <mutex>
 #include <string>
 #include <thread>
-#include <mutex>
-#include <atomic>
-#include <limits>
+#include <unordered_map>
 
 #include "dbconnector.h"
-#include "table.h"
-#include "subscriberstatetable.h"
-#include "select.h"
-
-#include <unordered_map>
-#include <boost/thread.hpp>
 #include "dhcp4relay.h"
-
+#include "select.h"
+#include "subscriberstatetable.h"
+#include "table.h"
 
 class DHCPMgr {
-private:
+   private:
     std::atomic<bool> stopThread;
-public:
+
+   public:
     DHCPMgr() : stopThread(false) {}
     ~DHCPMgr();
 
@@ -29,5 +28,3 @@ public:
     void processInterfaceNotification(std::deque<swss::KeyOpFieldsValuesTuple> &entries);
     void processDeviceMetadataNotification(std::deque<swss::KeyOpFieldsValuesTuple> &entries);
 };
-
-
